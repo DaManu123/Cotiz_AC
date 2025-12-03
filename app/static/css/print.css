@@ -1,0 +1,247 @@
+/* Estilos para impresión de cotizaciones */
+
+@page {
+    size: letter;
+    margin: 1.5cm;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    font-size: 11pt;
+    line-height: 1.4;
+    color: #333;
+}
+
+.cotizacion-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Encabezado */
+.header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #333;
+}
+
+.empresa-info h1 {
+    font-size: 18pt;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.empresa-info p {
+    font-size: 9pt;
+    color: #666;
+    margin: 2px 0;
+}
+
+.cotizacion-info {
+    text-align: right;
+}
+
+.cotizacion-info h2 {
+    font-size: 24pt;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.cotizacion-info p {
+    font-size: 11pt;
+    margin: 3px 0;
+}
+
+/* Sección cliente */
+.cliente-section {
+    background: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-left: 4px solid #333;
+}
+
+.cliente-section h3 {
+    font-size: 12pt;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.cliente-section p {
+    font-size: 10pt;
+    margin: 4px 0;
+}
+
+/* Tabla de items */
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.items-table thead {
+    background: #333;
+    color: white;
+}
+
+.items-table th {
+    padding: 10px;
+    text-align: left;
+    font-size: 10pt;
+    font-weight: bold;
+}
+
+.items-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 10pt;
+}
+
+.items-table tbody tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+/* Totales */
+.totales-section {
+    width: 50%;
+    margin-left: auto;
+    margin-bottom: 30px;
+}
+
+.totales-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    font-size: 11pt;
+}
+
+.totales-row.total {
+    background: #333;
+    color: white;
+    font-weight: bold;
+    font-size: 14pt;
+    margin-top: 5px;
+    padding: 10px;
+}
+
+.totales-row .label {
+    font-weight: 600;
+}
+
+.totales-row .valor {
+    text-align: right;
+}
+
+/* Estado de pago */
+.pago-section {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.pago-section p {
+    font-size: 10pt;
+    margin: 5px 0;
+}
+
+/* Términos y condiciones */
+.terminos-section {
+    margin-top: 30px;
+    page-break-inside: avoid;
+}
+
+.terminos-section h3 {
+    font-size: 12pt;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 5px;
+}
+
+.terminos-section pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Arial', sans-serif;
+    font-size: 9pt;
+    line-height: 1.5;
+    color: #555;
+}
+
+/* Firma */
+.firma-section {
+    margin-top: 50px;
+    text-align: center;
+    page-break-inside: avoid;
+}
+
+.firma-linea {
+    width: 300px;
+    border-bottom: 2px solid #333;
+    margin: 0 auto 10px;
+}
+
+.firma-section p {
+    font-size: 10pt;
+    color: #666;
+}
+
+/* Footer */
+.footer {
+    margin-top: 40px;
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.footer p {
+    font-size: 9pt;
+    color: #666;
+    margin: 5px 0;
+}
+
+/* Estilos específicos para impresión */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .cotizacion-container {
+        width: 100%;
+        max-width: none;
+    }
+    
+    /* Evitar saltos de página en secciones críticas */
+    .header,
+    .cliente-section,
+    .items-table thead,
+    .terminos-section,
+    .firma-section {
+        page-break-inside: avoid;
+    }
+    
+    /* Asegurar que la tabla no se rompa mal */
+    .items-table tr {
+        page-break-inside: avoid;
+    }
+}
+
+/* Estilos para vista en navegador (no impresión) */
+@media screen {
+    body {
+        background: #f0f0f0;
+        padding: 20px;
+    }
+    
+    .cotizacion-container {
+        background: white;
+        padding: 40px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+}

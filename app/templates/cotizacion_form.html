@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if cotizacion %}
+        {% if readonly %}Ver Cotización #{{ cotizacion.id }}{% else %}Editar Cotización #{{ cotizacion.id }}{% endif %}
+    {% else %}
+        Nueva Cotización
+    {% endif %}
+{% endblock %}
+
+{% block header %}
+    {% if cotizacion %}
+        {% if readonly %}Ver Cotización #{{ cotizacion.id }}{% else %}Editar Cotización #{{ cotizacion.id }}{% endif %}
+    {% else %}
+        Nueva Cotización
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<style>
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .section h3 {
+        margin-bottom: 15px;
+        color: #667eea;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    
+    .items-table {
+        width: 100%;
+        margin-top: 15px;
+    }
+    
+    .items-table th {
+        background: #667eea;
+        color: white;
+        padding: 10px;
+        text-align: left;
+    }
+    
+    .items-table td {
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+    
+    .items-table input,
+    .items-table textarea {
+        width: 100%;
+        padding: 6px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .total-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 15px;
+        font-size: 1.1em;
+    }
+    
+    .total-label {
+        font-weight: bold;
+        margin-right: 20px;
+    }
+    
+    .readonly-field {
+        background: #e9ecef;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<form method="POST" action="{% if cotizacion %}{{ url_for('main.actualizar_cotizacion', id=cotizacion.id) }}{% else %}{{ url_for('main.crear_cotizacion') }}{% endif %}" id="cotizacionForm">
+    
+    <!-- Sección Cliente -->
+    <div class="section">
+        <h3>📋 Información del Cliente</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cliente_nombre">Nombre del Cliente:</label>
+                {% if readonly %}
+                    <div class="readonly-field">{{ cotizacion.cliente.nombre if cotizacion.cliente else 'Sin cliente' }}</div>
+                {% else %}
+                    <input type="text" id="cliente_nombre" name="cliente_nombre" value="{{ cotizacion.cliente.nombre if cotizacion and cotizacion.cliente else '' }}" placeholder="Nombre completo">
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="cliente_telefono">Teléfono:</label>
+                {% if readonly %}
+                    <div class="readonly-field">{{ cotizacion.cliente.telefono if cotizacion.cliente else '' }}</div>
+                {% else %}
+                    <input type="tel" id="cliente_telefono" name="cliente_telefono" value="{{ cotizacion.cliente.telefono if cotizacion and cotizacion.cliente else '' }}" placeholder="+52 (55) 1234-5678">
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="cliente_correo">Correo Electrónico:</label>
+                {% if readonly %}
+                    <div class="readonly-field">{{ cotizacion.cliente.correo if cotizacion.cliente else '' }}</div>
+                {% else %}
+                    <input type="email" id="cliente_correo" name="cliente_correo" value="{{ cotizacion.cliente.correo if cotizacion and cotizacion.cliente else '' }}" placeholder="email@ejemplo.com">
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección Cotización -->
+    <div class="section">
+        <h3>💼 Datos de la Cotización</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="fecha">Fecha:</label>
+                {% if readonly %}
+                    <div class="readonly-field">{{ cotizacion.fecha.strftime('%d/%m/%Y') }}</div>
+                {% else %}
+                    <input type="date" id="fecha" name="fecha" value="{{ cotizacion.fecha.strftime('%Y-%m-%d') if cotizacion else '' }}" required>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="creado_por">Creado por:</label>
+                {% if readonly %}
+                    <div class="readonly-field">{{ cotizacion.creado_por or 'Usuario' }}</div>
+                {% else %}
+                    <input type="text" id="creado_por" name="creado_por" value="{{ cotizacion.creado_por if cotizacion else '' }}" placeholder="Nombre del vendedor">
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección Items -->
+    <div class="section">
+        <h3>📦 Items / Productos</h3>
+        
+        {% if not readonly %}
+        <div style="margin-bottom: 15px;">
+            <button type="button" class="btn btn-success" onclick="agregarItem()">➕ Agregar Item</button>
+        </div>
+        {% endif %}
+        
+        <div style="overflow-x: auto;">
+            <table class="items-table" id="itemsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Cantidad</th>
+                        <th style="width: 80px;">Unidad</th>
+                        <th style="width: 40%;">Descripción</th>
+                        <th style="width: 120px;">Precio Unitario</th>
+                        <th style="width: 120px;">Total</th>
+                        {% if not readonly %}
+                        <th style="width: 60px;">Acción</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    {% if cotizacion and cotizacion.items %}
+                        {% for item in cotizacion.items %}
+                        <tr class="item-row">
+                            <td>
+                                {% if readonly %}
+                                    {{ item.cantidad }}
+                                {% else %}
+                                    <input type="number" name="item_cantidad[]" step="0.01" min="0.01" value="{{ item.cantidad }}" required onchange="calcularTotales()">
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if readonly %}
+                                    {{ item.unidad }}
+                                {% else %}
+                                    <input type="text" name="item_unidad[]" value="{{ item.unidad }}" placeholder="pza">
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if readonly %}
+                                    {{ item.descripcion }}
+                                {% else %}
+                                    <textarea name="item_descripcion[]" rows="2" required>{{ item.descripcion }}</textarea>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if readonly %}
+                                    ${{ "%.2f"|format(item.precio_unitario) }}
+                                {% else %}
+                                    <input type="number" name="item_precio[]" step="0.01" min="0" value="{{ item.precio_unitario }}" required onchange="calcularTotales()">
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong class="item-total">${{ "%.2f"|format(item.total_item) }}</strong>
+                            </td>
+                            {% if not readonly %}
+                            <td>
+                                <button type="button" class="btn btn-danger" onclick="eliminarItem(this)">🗑️</button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        {% if not readonly %}
+                        <tr class="item-row">
+                            <td><input type="number" name="item_cantidad[]" step="0.01" min="0.01" value="1" required onchange="calcularTotales()"></td>
+                            <td><input type="text" name="item_unidad[]" value="pza" placeholder="pza"></td>
+                            <td><textarea name="item_descripcion[]" rows="2" required placeholder="Descripción del producto o servicio"></textarea></td>
+                            <td><input type="number" name="item_precio[]" step="0.01" min="0" value="0" required onchange="calcularTotales()"></td>
+                            <td><strong class="item-total">$0.00</strong></td>
+                            <td><button type="button" class="btn btn-danger" onclick="eliminarItem(this)">🗑️</button></td>
+                        </tr>
+                        {% endif %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Sección Cálculos -->
+    <div class="section">
+        <h3>💰 Cálculos y Totales</h3>
+        
+        <div class="form-row" style="max-width: 800px; margin-left: auto;">
+            <div class="form-group">
+                <label for="descuento_tipo">Tipo de Descuento:</label>
+                {% if readonly %}
+                    <div class="readonly-field">{{ 'Porcentaje' if cotizacion.descuento_tipo == 'percent' else 'Monto Fijo' }}</div>
+                {% else %}
+                    <select id="descuento_tipo" name="descuento_tipo" onchange="calcularTotales()">
+                        <option value="fixed" {% if cotizacion and cotizacion.descuento_tipo == 'fixed' %}selected{% endif %}>Monto Fijo ($)</option>
+                        <option value="percent" {% if cotizacion and cotizacion.descuento_tipo == 'percent' %}selected{% endif %}>Porcentaje (%)</option>
+                    </select>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="descuento_valor">Descuento:</label>
+                {% if readonly %}
+                    <div class="readonly-field">{{ cotizacion.descuento_valor }}{{ '%' if cotizacion.descuento_tipo == 'percent' else ' MXN' }}</div>
+                {% else %}
+                    <input type="number" id="descuento_valor" name="descuento_valor" step="0.01" min="0" value="{{ cotizacion.descuento_valor if cotizacion else 0 }}" onchange="calcularTotales()">
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="iva_porcentaje">IVA (%):</label>
+                {% if readonly %}
+                    <div class="readonly-field">{{ cotizacion.iva_porcentaje }}%</div>
+                {% else %}
+                    <input type="number" id="iva_porcentaje" name="iva_porcentaje" step="0.01" min="0" value="{{ cotizacion.iva_porcentaje if cotizacion else config.IVA_PORCENTAJE }}" onchange="calcularTotales()">
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="envio">Envío ($):</label>
+                {% if readonly %}
+                    <div class="readonly-field">${{ "%.2f"|format(cotizacion.envio) }}</div>
+                {% else %}
+                    <input type="number" id="envio" name="envio" step="0.01" min="0" value="{{ cotizacion.envio if cotizacion else 0 }}" onchange="calcularTotales()">
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="max-width: 400px; margin-left: auto; margin-top: 20px; background: white; padding: 20px; border-radius: 8px; border: 2px solid #667eea;">
+            <div class="total-row" style="justify-content: space-between; font-size: 1em; margin-top: 5px;">
+                <span>Subtotal:</span>
+                <strong id="subtotal_display">${{ "%.2f"|format(cotizacion.subtotal) if cotizacion else '0.00' }}</strong>
+            </div>
+            <div class="total-row" style="justify-content: space-between; font-size: 1em; margin-top: 5px;">
+                <span>Descuento:</span>
+                <strong id="descuento_display" style="color: #dc3545;">-${{ "%.2f"|format(cotizacion.descuento_monto) if cotizacion else '0.00' }}</strong>
+            </div>
+            <div class="total-row" style="justify-content: space-between; font-size: 1em; margin-top: 5px;">
+                <span>Base Imponible:</span>
+                <strong id="base_display">${{ "%.2f"|format(cotizacion.subtotal - cotizacion.descuento_monto) if cotizacion else '0.00' }}</strong>
+            </div>
+            <div class="total-row" style="justify-content: space-between; font-size: 1em; margin-top: 5px;">
+                <span>IVA:</span>
+                <strong id="iva_display">${{ "%.2f"|format(cotizacion.iva_monto) if cotizacion else '0.00' }}</strong>
+            </div>
+            <div class="total-row" style="justify-content: space-between; font-size: 1em; margin-top: 5px;">
+                <span>Envío:</span>
+                <strong id="envio_display">${{ "%.2f"|format(cotizacion.envio) if cotizacion else '0.00' }}</strong>
+            </div>
+            <hr style="margin: 15px 0; border: 1px solid #667eea;">
+            <div class="total-row" style="justify-content: space-between; font-size: 1.3em; color: #667eea;">
+                <span class="total-label">TOTAL:</span>
+                <strong id="total_display">${{ "%.2f"|format(cotizacion.total) if cotizacion else '0.00' }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    {% if cotizacion and readonly %}
+    <!-- Sección Estado de Pago -->
+    <div class="section">
+        <h3>💳 Estado de Pago</h3>
+        <div class="form-row">
+            <div>
+                <strong>Estado:</strong>
+                {% if cotizacion.estado_pago == 'Pagado' %}
+                    <span style="background: #28a745; color: white; padding: 8px 12px; border-radius: 4px;">✓ Pagado</span>
+                {% elif cotizacion.estado_pago == 'Parcial' %}
+                    <span style="background: #ffc107; color: #333; padding: 8px 12px; border-radius: 4px;">⏱ Parcial</span>
+                {% else %}
+                    <span style="background: #dc3545; color: white; padding: 8px 12px; border-radius: 4px;">⏳ Pendiente</span>
+                {% endif %}
+            </div>
+            <div>
+                <strong>Monto Pagado:</strong> ${{ "%.2f"|format(cotizacion.monto_pagado) }}
+            </div>
+            <div>
+                <strong>Saldo Pendiente:</strong> 
+                <span style="color: {% if cotizacion.calcular_saldo() > 0 %}#dc3545{% else %}#28a745{% endif %}; font-weight: bold; font-size: 1.2em;">
+                    ${{ "%.2f"|format(cotizacion.calcular_saldo()) }}
+                </span>
+            </div>
+        </div>
+        
+        {% if cotizacion.estado_pago != 'Pagado' %}
+        <form method="POST" action="{{ url_for('main.registrar_pago', id=cotizacion.id) }}" style="margin-top: 20px; max-width: 400px;">
+            <div class="form-group">
+                <label for="monto_pago">Registrar Pago:</label>
+                <input type="number" id="monto_pago" name="monto_pago" step="0.01" min="0" max="{{ cotizacion.calcular_saldo() }}" required>
+            </div>
+            <button type="submit" class="btn btn-success">💰 Registrar Pago</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Botones de Acción -->
+    <div style="margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap;">
+        {% if readonly %}
+            <a href="{{ url_for('main.editar_cotizacion', id=cotizacion.id) }}" class="btn btn-warning">✏️ Editar Cotización</a>
+            <a href="{{ url_for('main.exportar_cotizacion_excel', id=cotizacion.id) }}" class="btn btn-success">📊 Descargar Excel</a>
+            <a href="{{ url_for('main.exportar_cotizacion_pdf', id=cotizacion.id) }}" class="btn btn-danger">📄 Descargar PDF</a>
+            <form method="POST" action="{{ url_for('main.eliminar_cotizacion', id=cotizacion.id) }}" style="display: inline;" onsubmit="return confirm('¿Está seguro de eliminar esta cotización?')">
+                <button type="submit" class="btn btn-danger">🗑️ Eliminar</button>
+            </form>
+        {% else %}
+            <button type="submit" class="btn btn-primary">💾 {{ 'Actualizar' if cotizacion else 'Guardar' }} Cotización</button>
+        {% endif %}
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">↩️ Volver a la Lista</a>
+    </div>
+</form>
+
+{% if not readonly %}
+<script>
+function agregarItem() {
+    const tbody = document.getElementById('itemsBody');
+    const newRow = document.createElement('tr');
+    newRow.className = 'item-row';
+    newRow.innerHTML = `
+        <td><input type="number" name="item_cantidad[]" step="0.01" min="0.01" value="1" required onchange="calcularTotales()"></td>
+        <td><input type="text" name="item_unidad[]" value="pza" placeholder="pza"></td>
+        <td><textarea name="item_descripcion[]" rows="2" required placeholder="Descripción del producto o servicio"></textarea></td>
+        <td><input type="number" name="item_precio[]" step="0.01" min="0" value="0" required onchange="calcularTotales()"></td>
+        <td><strong class="item-total">$0.00</strong></td>
+        <td><button type="button" class="btn btn-danger" onclick="eliminarItem(this)">🗑️</button></td>
+    `;
+    tbody.appendChild(newRow);
+    calcularTotales();
+}
+
+function eliminarItem(btn) {
+    const row = btn.closest('tr');
+    const tbody = document.getElementById('itemsBody');
+    if (tbody.children.length > 1) {
+        row.remove();
+        calcularTotales();
+    } else {
+        alert('Debe haber al menos un item');
+    }
+}
+
+function calcularTotales() {
+    const rows = document.querySelectorAll('.item-row');
+    let subtotal = 0;
+    
+    rows.forEach(row => {
+        const cantidad = parseFloat(row.querySelector('input[name="item_cantidad[]"]').value) || 0;
+        const precio = parseFloat(row.querySelector('input[name="item_precio[]"]').value) || 0;
+        const totalItem = cantidad * precio;
+        row.querySelector('.item-total').textContent = '$' + totalItem.toFixed(2);
+        subtotal += totalItem;
+    });
+    
+    const descuentoTipo = document.getElementById('descuento_tipo').value;
+    const descuentoValor = parseFloat(document.getElementById('descuento_valor').value) || 0;
+    const ivaPorcentaje = parseFloat(document.getElementById('iva_porcentaje').value) || 0;
+    const envio = parseFloat(document.getElementById('envio').value) || 0;
+    
+    let descuentoMonto = 0;
+    if (descuentoTipo === 'percent') {
+        descuentoMonto = subtotal * (descuentoValor / 100);
+    } else {
+        descuentoMonto = descuentoValor;
+    }
+    
+    const base = subtotal - descuentoMonto;
+    const ivaMonto = base * (ivaPorcentaje / 100);
+    const total = base + ivaMonto + envio;
+    
+    document.getElementById('subtotal_display').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('descuento_display').textContent = '-$' + descuentoMonto.toFixed(2);
+    document.getElementById('base_display').textContent = '$' + base.toFixed(2);
+    document.getElementById('iva_display').textContent = '$' + ivaMonto.toFixed(2);
+    document.getElementById('envio_display').textContent = '$' + envio.toFixed(2);
+    document.getElementById('total_display').textContent = '$' + total.toFixed(2);
+}
+
+// Inicializar cálculo al cargar
+document.addEventListener('DOMContentLoaded', function() {
+    calcularTotales();
+});
+</script>
+{% endif %}
+{% endblock %}

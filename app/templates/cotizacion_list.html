@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Cotizaciones{% endblock %}
+
+{% block header %}Lista de Cotizaciones{% endblock %}
+
+{% block content %}
+<div class="filters" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+    <h3 style="margin-bottom: 15px;">Filtros</h3>
+    <form method="GET" action="{{ url_for('main.index') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="fecha_desde">Fecha desde:</label>
+            <input type="date" id="fecha_desde" name="fecha_desde" value="{{ request.args.get('fecha_desde', '') }}">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="fecha_hasta">Fecha hasta:</label>
+            <input type="date" id="fecha_hasta" name="fecha_hasta" value="{{ request.args.get('fecha_hasta', '') }}">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="cliente">Cliente:</label>
+            <input type="text" id="cliente" name="cliente" placeholder="Nombre del cliente" value="{{ request.args.get('cliente', '') }}">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="estado">Estado:</label>
+            <select id="estado" name="estado">
+                <option value="">Todos</option>
+                <option value="Pendiente" {% if request.args.get('estado') == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="Parcial" {% if request.args.get('estado') == 'Parcial' %}selected{% endif %}>Parcial</option>
+                <option value="Pagado" {% if request.args.get('estado') == 'Pagado' %}selected{% endif %}>Pagado</option>
+            </select>
+        </div>
+        
+        <div style="display: flex; align-items: flex-end;">
+            <button type="submit" class="btn btn-primary" style="margin-right: 10px;">🔍 Filtrar</button>
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">🔄 Limpiar</a>
+        </div>
+    </form>
+</div>
+
+{% if cotizaciones %}
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Saldo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cotizacion in cotizaciones %}
+                <tr>
+                    <td><strong>#{{ cotizacion.id }}</strong></td>
+                    <td>{{ cotizacion.fecha.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ cotizacion.cliente.nombre if cotizacion.cliente else 'Sin cliente' }}</td>
+                    <td style="font-weight: bold;">${{ "%.2f"|format(cotizacion.total) }}</td>
+                    <td>
+                        {% if cotizacion.estado_pago == 'Pagado' %}
+                            <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✓ Pagado</span>
+                        {% elif cotizacion.estado_pago == 'Parcial' %}
+                            <span style="background: #ffc107; color: #333; padding: 4px 8px; border-radius: 4px; font-size: 12px;">⏱ Parcial</span>
+                        {% else %}
+                            <span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">⏳ Pendiente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set saldo = cotizacion.calcular_saldo() %}
+                        {% if saldo > 0 %}
+                            <span style="color: #dc3545; font-weight: bold;">${{ "%.2f"|format(saldo) }}</span>
+                        {% else %}
+                            <span style="color: #28a745;">$0.00</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space: nowrap;">
+                        <a href="{{ url_for('main.ver_cotizacion', id=cotizacion.id) }}" class="btn btn-primary" title="Ver">👁️</a>
+                        <a href="{{ url_for('main.editar_cotizacion', id=cotizacion.id) }}" class="btn btn-warning" title="Editar">✏️</a>
+                        <a href="{{ url_for('main.exportar_cotizacion_excel', id=cotizacion.id) }}" class="btn btn-success" title="Excel">📊</a>
+                        <a href="{{ url_for('main.exportar_cotizacion_pdf', id=cotizacion.id) }}" class="btn btn-danger" title="PDF">📄</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 6px;">
+        <strong>Total de cotizaciones:</strong> {{ cotizaciones|length }}
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 60px 20px; background: #f8f9fa; border-radius: 8px;">
+        <h3 style="color: #666; margin-bottom: 10px;">📋 No hay cotizaciones</h3>
+        <p style="color: #999; margin-bottom: 20px;">Comienza creando tu primera cotización</p>
+        <a href="{{ url_for('main.nueva_cotizacion') }}" class="btn btn-primary">➕ Crear Primera Cotización</a>
+    </div>
+{% endif %}
+{% endblock %}

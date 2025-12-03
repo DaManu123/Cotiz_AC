@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotización #{{ cotizacion.id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}">
+</head>
+<body>
+    <div class="cotizacion-container">
+        <!-- Encabezado -->
+        <div class="header">
+            <div class="empresa-info">
+                <h1>{{ config.EMPRESA_NOMBRE }}</h1>
+                <p>RFC: {{ config.EMPRESA_RFC }}</p>
+                <p>{{ config.EMPRESA_DIRECCION }}</p>
+                <p>Tel: {{ config.EMPRESA_TELEFONO }}</p>
+                <p>Email: {{ config.EMPRESA_EMAIL }}</p>
+            </div>
+            <div class="cotizacion-info">
+                <h2>COTIZACIÓN</h2>
+                <p><strong>No.</strong> {{ cotizacion.id }}</p>
+                <p><strong>Fecha:</strong> {{ cotizacion.fecha.strftime('%d/%m/%Y') }}</p>
+            </div>
+        </div>
+        
+        <!-- Información del cliente -->
+        {% if cotizacion.cliente %}
+        <div class="cliente-section">
+            <h3>CLIENTE</h3>
+            <p><strong>Nombre:</strong> {{ cotizacion.cliente.nombre }}</p>
+            {% if cotizacion.cliente.telefono %}
+            <p><strong>Teléfono:</strong> {{ cotizacion.cliente.telefono }}</p>
+            {% endif %}
+            {% if cotizacion.cliente.correo %}
+            <p><strong>Correo:</strong> {{ cotizacion.cliente.correo }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Tabla de items -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>Descripción</th>
+                    <th>P.U.</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cotizacion.items %}
+                <tr>
+                    <td style="text-align: center;">{{ item.cantidad }}</td>
+                    <td style="text-align: center;">{{ item.unidad }}</td>
+                    <td>{{ item.descripcion }}</td>
+                    <td style="text-align: right;">${{ "%.2f"|format(item.precio_unitario) }}</td>
+                    <td style="text-align: right;">${{ "%.2f"|format(item.total_item) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Resumen financiero -->
+        <div class="totales-section">
+            <div class="totales-row">
+                <span class="label">Subtotal:</span>
+                <span class="valor">${{ "%.2f"|format(cotizacion.subtotal) }}</span>
+            </div>
+            <div class="totales-row">
+                <span class="label">Descuento ({{ cotizacion.descuento_valor }}{{ '%' if cotizacion.descuento_tipo == 'percent' else ' MXN' }}):</span>
+                <span class="valor">-${{ "%.2f"|format(cotizacion.descuento_monto) }}</span>
+            </div>
+            <div class="totales-row">
+                <span class="label">Base Imponible:</span>
+                <span class="valor">${{ "%.2f"|format(cotizacion.subtotal - cotizacion.descuento_monto) }}</span>
+            </div>
+            <div class="totales-row">
+                <span class="label">IVA ({{ cotizacion.iva_porcentaje }}%):</span>
+                <span class="valor">${{ "%.2f"|format(cotizacion.iva_monto) }}</span>
+            </div>
+            {% if cotizacion.envio > 0 %}
+            <div class="totales-row">
+                <span class="label">Envío:</span>
+                <span class="valor">${{ "%.2f"|format(cotizacion.envio) }}</span>
+            </div>
+            {% endif %}
+            <div class="totales-row total">
+                <span class="label">TOTAL:</span>
+                <span class="valor">${{ "%.2f"|format(cotizacion.total) }} {{ config.MONEDA }}</span>
+            </div>
+        </div>
+        
+        <!-- Estado de pago -->
+        {% if cotizacion.monto_pagado > 0 %}
+        <div class="pago-section">
+            <p><strong>Estado de Pago:</strong> {{ cotizacion.estado_pago }}</p>
+            <p><strong>Monto Pagado:</strong> ${{ "%.2f"|format(cotizacion.monto_pagado) }}</p>
+            <p><strong>Saldo Pendiente:</strong> ${{ "%.2f"|format(cotizacion.calcular_saldo()) }}</p>
+        </div>
+        {% endif %}
+        
+        <!-- Términos y condiciones -->
+        <div class="terminos-section">
+            <h3>TÉRMINOS Y CONDICIONES</h3>
+            <pre>{{ cotizacion.terms_conditions or config.TERMINOS_CONDICIONES }}</pre>
+        </div>
+        
+        <!-- Firma -->
+        <div class="firma-section">
+            <div class="firma-linea"></div>
+            <p>Firma y Sello</p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>Gracias por su preferencia</p>
+            <p style="font-size: 0.8em; color: #666;">
+                Cotización generada el {{ cotizacion.creado_en.strftime('%d/%m/%Y %H:%M') }}
+                {% if cotizacion.creado_por %} por {{ cotizacion.creado_por }}{% endif %}
+            </p>
+        </div>
+    </div>
+</body>
+</html>
