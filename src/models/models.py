@@ -1,7 +1,12 @@
 from datetime import datetime
+from typing import List, Optional, TYPE_CHECKING
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import Mapped, relationship
 
 db = SQLAlchemy()
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import WriteOnlyMapped
 
 
 class Empresa(db.Model):
@@ -43,7 +48,7 @@ class Cliente(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relación con cotizaciones
-    cotizaciones = db.relationship('Cotizacion', backref='cliente', lazy=True)
+    cotizaciones: Mapped[List["Cotizacion"]] = relationship('Cotizacion', back_populates='cliente', lazy=True)
     
     def to_dict(self):
         return {
@@ -71,8 +76,14 @@ class Cotizacion(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relación con detalles
-    detalles = db.relationship('DetalleCotizacion', backref='cotizacion', lazy=True, cascade='all, delete-orphan')
+    # Relaciones
+    cliente: Mapped["Cliente"] = relationship('Cliente', back_populates='cotizaciones')
+    detalles: Mapped[List["DetalleCotizacion"]] = relationship(
+        'DetalleCotizacion', 
+        back_populates='cotizacion', 
+        lazy=True, 
+        cascade='all, delete-orphan'
+    )
     
     def to_dict(self):
         return {
@@ -86,12 +97,15 @@ class Cotizacion(db.Model):
             'total': self.total,
             'estatus': self.estatus,
             'notas': self.notas,
-            'detalles': [d.to_dict() for d in self.detalles]
+            'detalles': [d.to_dict() for d in self.detalles] if self.detalles else []
         }
     
     def calcular_totales(self):
         """Calcula subtotal, impuestos y total"""
-        self.subtotal = sum(detalle.total_linea for detalle in self.detalles)
+        if self.detalles:
+            self.subtotal = sum(detalle.total_linea for detalle in self.detalles)
+        else:
+            self.subtotal = 0.0
         # Impuestos configurables (por ahora 16%)
         self.impuestos = self.subtotal * 0.16
         self.total = self.subtotal + self.impuestos
@@ -108,6 +122,9 @@ class DetalleCotizacion(db.Model):
     precio_unitario = db.Column(db.Float, nullable=False)
     total_linea = db.Column(db.Float, nullable=False)
     orden = db.Column(db.Integer, default=0)  # Para mantener el orden
+    
+    # Relación
+    cotizacion: Mapped["Cotizacion"] = relationship('Cotizacion', back_populates='detalles')
     
     def to_dict(self):
         return {

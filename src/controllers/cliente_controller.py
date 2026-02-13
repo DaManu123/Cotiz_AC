@@ -16,12 +16,11 @@ class ClienteController:
             if not data.get('nombre'):
                 return {'error': 'Nombre es requerido'}, 400
             
-            cliente = Cliente(
-                nombre=data['nombre'],
-                telefono=data.get('telefono', ''),
-                email=data.get('email', ''),
-                direccion=data.get('direccion', '')
-            )
+            cliente = Cliente()
+            cliente.nombre = data['nombre']
+            cliente.telefono = data.get('telefono', '')
+            cliente.email = data.get('email', '')
+            cliente.direccion = data.get('direccion', '')
             
             db.session.add(cliente)
             db.session.commit()

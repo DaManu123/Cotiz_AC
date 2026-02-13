@@ -48,23 +48,21 @@ class CotizacionController:
             numero_cotizacion = CotizacionController.generar_consecutivo()
             
             # Crear cotización
-            cotizacion = Cotizacion(
-                numero_cotizacion=numero_cotizacion,
-                fecha=datetime.strptime(data.get('fecha', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d'),
-                cliente_id=data['cliente_id'],
-                notas=data.get('notas', ''),
-                estatus='Borrador'
-            )
+            cotizacion = Cotizacion()
+            cotizacion.numero_cotizacion = numero_cotizacion
+            cotizacion.fecha = datetime.strptime(data.get('fecha', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d')
+            cotizacion.cliente_id = data['cliente_id']
+            cotizacion.notas = data.get('notas', '')
+            cotizacion.estatus = 'Borrador'
             
             # Agregar detalles
             if data.get('detalles'):
                 for idx, detalle_data in enumerate(data['detalles']):
-                    detalle = DetalleCotizacion(
-                        cantidad=detalle_data['cantidad'],
-                        descripcion=detalle_data['descripcion'],
-                        precio_unitario=detalle_data['precio_unitario'],
-                        orden=idx
-                    )
+                    detalle = DetalleCotizacion()
+                    detalle.cantidad = detalle_data['cantidad']
+                    detalle.descripcion = detalle_data['descripcion']
+                    detalle.precio_unitario = detalle_data['precio_unitario']
+                    detalle.orden = idx
                     detalle.calcular_total()
                     cotizacion.detalles.append(detalle)
             
@@ -140,13 +138,12 @@ class CotizacionController:
                 
                 # Agregar nuevos detalles
                 for idx, detalle_data in enumerate(data['detalles']):
-                    detalle = DetalleCotizacion(
-                        cotizacion_id=cotizacion_id,
-                        cantidad=detalle_data['cantidad'],
-                        descripcion=detalle_data['descripcion'],
-                        precio_unitario=detalle_data['precio_unitario'],
-                        orden=idx
-                    )
+                    detalle = DetalleCotizacion()
+                    detalle.cotizacion_id = cotizacion_id
+                    detalle.cantidad = detalle_data['cantidad']
+                    detalle.descripcion = detalle_data['descripcion']
+                    detalle.precio_unitario = detalle_data['precio_unitario']
+                    detalle.orden = idx
                     detalle.calcular_total()
                     db.session.add(detalle)
                 

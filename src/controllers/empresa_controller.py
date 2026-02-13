@@ -21,14 +21,13 @@ class EmpresaController:
             
             if not empresa:
                 # Crear nueva empresa
-                empresa = Empresa(
-                    nombre=data.get('nombre', ''),
-                    direccion=data.get('direccion', ''),
-                    telefono=data.get('telefono', ''),
-                    email=data.get('email', ''),
-                    redes_sociales=data.get('redes_sociales', ''),
-                    logo=data.get('logo', '')
-                )
+                empresa = Empresa()
+                empresa.nombre = data.get('nombre', '')
+                empresa.direccion = data.get('direccion', '')
+                empresa.telefono = data.get('telefono', '')
+                empresa.email = data.get('email', '')
+                empresa.redes_sociales = data.get('redes_sociales', '')
+                empresa.logo = data.get('logo', '')
                 db.session.add(empresa)
             else:
                 # Actualizar empresa existente

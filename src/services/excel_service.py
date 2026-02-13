@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
+from typing import Dict, Any
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.worksheet import Worksheet
 
 
 class ExcelService:
@@ -12,7 +14,7 @@ class ExcelService:
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
     
-    def generar_cotizacion(self, cotizacion_data, empresa_data):
+    def generar_cotizacion(self, cotizacion_data: Dict[str, Any], empresa_data: Dict[str, Any]) -> str:
         """
         Genera un archivo Excel de cotización profesional
         
@@ -29,7 +31,7 @@ class ExcelService:
         
         # Crear libro
         wb = Workbook()
-        ws = wb.active
+        ws: Worksheet = wb.active  # type: ignore
         ws.title = "Cotización"
         
         # Estilos
@@ -130,7 +132,7 @@ class ExcelService:
         headers = ['Cantidad', 'Descripción', 'Precio Unitario', 'Total']
         for col_num, header in enumerate(headers, start=1):
             cell = ws.cell(row=row, column=col_num)
-            cell.value = header
+            cell.value = header  # type: ignore
             cell.font = Font(name='Arial', size=10, bold=True, color='FFFFFF')
             cell.fill = fill_header
             cell.alignment = align_center

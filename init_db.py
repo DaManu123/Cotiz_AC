@@ -21,36 +21,34 @@ def init_database():
         print("Insertando datos de ejemplo...")
         
         # Crear empresa
-        empresa = Empresa(
-            nombre="Cotiz AC - Servicios de Climatización",
-            direccion="Av. Principal #123, Col. Centro, Ciudad",
-            telefono="(555) 123-4567",
-            email="contacto@cotizac.com",
-            redes_sociales="Facebook: @CotizAC | Instagram: @cotizac_oficial"
-        )
+        empresa = Empresa()
+        empresa.nombre = "Cotiz AC - Servicios de Climatización"
+        empresa.direccion = "Av. Principal #123, Col. Centro, Ciudad"
+        empresa.telefono = "(555) 123-4567"
+        empresa.email = "contacto@cotizac.com"
+        empresa.redes_sociales = "Facebook: @CotizAC | Instagram: @cotizac_oficial"
         db.session.add(empresa)
         
         # Crear clientes de ejemplo
-        clientes = [
-            Cliente(
-                nombre="Juan Pérez González",
-                telefono="555-1111",
-                email="juan.perez@email.com",
-                direccion="Calle Reforma 456, Col. Juárez"
-            ),
-            Cliente(
-                nombre="María López Hernández",
-                telefono="555-2222",
-                email="maria.lopez@email.com",
-                direccion="Av. Insurgentes 789, Col. Roma"
-            ),
-            Cliente(
-                nombre="Empresa Construcciones XYZ S.A.",
-                telefono="555-3333",
-                email="contacto@construccionesxyz.com",
-                direccion="Boulevard Industrial 321, Parque Industrial"
-            )
-        ]
+        cliente1 = Cliente()
+        cliente1.nombre = "Juan Pérez González"
+        cliente1.telefono = "555-1111"
+        cliente1.email = "juan.perez@email.com"
+        cliente1.direccion = "Calle Reforma 456, Col. Juárez"
+        
+        cliente2 = Cliente()
+        cliente2.nombre = "María López Hernández"
+        cliente2.telefono = "555-2222"
+        cliente2.email = "maria.lopez@email.com"
+        cliente2.direccion = "Av. Insurgentes 789, Col. Roma"
+        
+        cliente3 = Cliente()
+        cliente3.nombre = "Empresa Construcciones XYZ S.A."
+        cliente3.telefono = "555-3333"
+        cliente3.email = "contacto@construccionesxyz.com"
+        cliente3.direccion = "Boulevard Industrial 321, Parque Industrial"
+        
+        clientes = [cliente1, cliente2, cliente3]
         
         for cliente in clientes:
             db.session.add(cliente)
@@ -58,38 +56,36 @@ def init_database():
         db.session.commit()
         
         # Crear cotización de ejemplo
-        cotizacion = Cotizacion(
-            numero_cotizacion="COT-00001",
-            fecha=date.today(),
-            cliente_id=1,
-            estatus="Enviada",
-            notas="Incluye instalación y garantía de 1 año. Tiempo de entrega: 3-5 días hábiles."
-        )
+        cotizacion = Cotizacion()
+        cotizacion.numero_cotizacion = "COT-00001"
+        cotizacion.fecha = date.today()
+        cotizacion.cliente_id = 1
+        cotizacion.estatus = "Enviada"
+        cotizacion.notas = "Incluye instalación y garantía de 1 año. Tiempo de entrega: 3-5 días hábiles."
         
         # Agregar detalles
-        detalles = [
-            DetalleCotizacion(
-                cantidad=2,
-                descripcion="Aire Acondicionado Split 12,000 BTU Inverter - Marca Premium",
-                precio_unitario=8500.00,
-                total_linea=17000.00,
-                orden=0
-            ),
-            DetalleCotizacion(
-                cantidad=2,
-                descripcion="Instalación completa de equipo incluye: tubería, cableado, soportes y mano de obra",
-                precio_unitario=2500.00,
-                total_linea=5000.00,
-                orden=1
-            ),
-            DetalleCotizacion(
-                cantidad=1,
-                descripcion="Mantenimiento preventivo (cortesía por compra)",
-                precio_unitario=0.00,
-                total_linea=0.00,
-                orden=2
-            )
-        ]
+        detalle1 = DetalleCotizacion()
+        detalle1.cantidad = 2
+        detalle1.descripcion = "Aire Acondicionado Split 12,000 BTU Inverter - Marca Premium"
+        detalle1.precio_unitario = 8500.00
+        detalle1.total_linea = 17000.00
+        detalle1.orden = 0
+        
+        detalle2 = DetalleCotizacion()
+        detalle2.cantidad = 2
+        detalle2.descripcion = "Instalación completa de equipo incluye: tubería, cableado, soportes y mano de obra"
+        detalle2.precio_unitario = 2500.00
+        detalle2.total_linea = 5000.00
+        detalle2.orden = 1
+        
+        detalle3 = DetalleCotizacion()
+        detalle3.cantidad = 1
+        detalle3.descripcion = "Mantenimiento preventivo (cortesía por compra)"
+        detalle3.precio_unitario = 0.00
+        detalle3.total_linea = 0.00
+        detalle3.orden = 2
+        
+        detalles = [detalle1, detalle2, detalle3]
         
         for detalle in detalles:
             cotizacion.detalles.append(detalle)

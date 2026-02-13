@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, request, jsonify, send_file
-from flask_cors import CORS
+from flask_cors import CORS  # type: ignore
 from dotenv import load_dotenv
 from src.models.models import db
 from src.controllers.cotizacion_controller import CotizacionController
@@ -204,10 +204,11 @@ def api_exportar_pdf(cotizacion_id):
         filepath = pdf_service.generar_cotizacion(cotizacion_data, empresa_data)
         
         # Enviar archivo
+        numero_cot = cotizacion_data['numero_cotizacion'] if isinstance(cotizacion_data, dict) else 'cotizacion'
         return send_file(
             filepath,
             as_attachment=True,
-            download_name=f"{cotizacion_data['numero_cotizacion']}.pdf",
+            download_name=f"{numero_cot}.pdf",
             mimetype='application/pdf'
         )
         
@@ -231,13 +232,14 @@ def api_exportar_excel(cotizacion_id):
         empresa_data = empresa_result.get('empresa', {}) if empresa_status == 200 else {}
         
         # Generar Excel
-        filepath = excel_service.generar_cotizacion(cotizacion_data, empresa_data)
+        filepath = excel_service.generar_cotizacion(cotizacion_data, empresa_data)  # type: ignore
         
         # Enviar archivo
+        numero_cot = cotizacion_data['numero_cotizacion'] if isinstance(cotizacion_data, dict) else 'cotizacion'
         return send_file(
             filepath,
             as_attachment=True,
-            download_name=f"{cotizacion_data['numero_cotizacion']}.xlsx",
+            download_name=f"{numero_cot}.xlsx",
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         
