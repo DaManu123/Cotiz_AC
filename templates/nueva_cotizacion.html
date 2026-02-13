@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Cotización - Cotiz AC{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-plus-circle"></i> Nueva Cotización
+        </h1>
+    </div>
+</div>
+
+<form id="form-cotizacion">
+    <!-- Información General -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> Información General</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Número de Cotización</label>
+                    <input type="text" class="form-control" id="numero-cotizacion" readonly>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" class="form-control" id="fecha" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Estatus</label>
+                    <select class="form-select" id="estatus">
+                        <option value="Borrador" selected>Borrador</option>
+                        <option value="Enviada">Enviada</option>
+                        <option value="Aceptada">Aceptada</option>
+                        <option value="Cancelada">Cancelada</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Cliente -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-person"></i> Cliente</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Cliente *</label>
+                    <div class="input-group">
+                        <select class="form-select" id="cliente-id" required>
+                            <option value="">Seleccionar cliente...</option>
+                        </select>
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoCliente">
+                            <i class="bi bi-plus"></i> Nuevo
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" class="form-control" id="cliente-telefono" readonly>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="cliente-email" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conceptos / Detalles -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-list-check"></i> Conceptos</h5>
+            <button type="button" class="btn btn-light btn-sm" onclick="agregarLinea()">
+                <i class="bi bi-plus-circle"></i> Agregar Línea
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tabla-conceptos">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 10%;">Cantidad</th>
+                            <th style="width: 50%;">Descripción</th>
+                            <th style="width: 15%;">Precio Unit.</th>
+                            <th style="width: 15%;">Total</th>
+                            <th style="width: 10%;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="conceptos-body">
+                        <!-- Se llenarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Totales -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <label class="form-label">Notas / Condiciones</label>
+                    <textarea class="form-control" id="notas" rows="3" placeholder="Incluye garantía, tiempo de entrega, etc."></textarea>
+                </div>
+                <div class="col-md-4">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="text-end"><strong>Subtotal:</strong></td>
+                            <td class="text-end" id="subtotal">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td class="text-end"><strong>IVA (16%):</strong></td>
+                            <td class="text-end" id="impuestos">$0.00</td>
+                        </tr>
+                        <tr class="table-success">
+                            <td class="text-end"><strong>TOTAL:</strong></td>
+                            <td class="text-end"><h4 id="total">$0.00</h4></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>
+                <div>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-save"></i> Guardar Cotización
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Modal Nuevo Cliente -->
+<div class="modal fade" id="modalNuevoCliente" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-plus"></i> Nuevo Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-nuevo-cliente">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nuevo-nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="nuevo-telefono">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="nuevo-email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dirección</label>
+                        <textarea class="form-control" id="nuevo-direccion" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarNuevoCliente()">
+                    <i class="bi bi-save"></i> Guardar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/cotizacion.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración - Cotiz AC{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-gear"></i> Configuración de Empresa
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-building"></i> Datos de la Empresa</h5>
+            </div>
+            <div class="card-body">
+                <form id="form-empresa">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de la Empresa *</label>
+                        <input type="text" class="form-control" id="empresa-nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="empresa-direccion">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" id="empresa-telefono">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="empresa-email">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Redes Sociales</label>
+                        <textarea class="form-control" id="empresa-redes" rows="2" 
+                                  placeholder="Ej: Facebook: @empresa | Instagram: @empresa_oficial"></textarea>
+                        <small class="form-text text-muted">Separa las redes con |</small>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-save"></i> Guardar Configuración
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Información</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Sistema:</strong> Cotiz AC v1.0</p>
+                <p><strong>Base de Datos:</strong> SQLite</p>
+                <p><strong>Módulos:</strong></p>
+                <ul>
+                    <li>Gestión de Cotizaciones</li>
+                    <li>Gestión de Clientes</li>
+                    <li>Exportación PDF/Excel</li>
+                    <li>Historial y Reportes</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Próximas Mejoras</h5>
+            </div>
+            <div class="card-body">
+                <ul class="small">
+                    <li>Conversión a factura</li>
+                    <li>Envío por correo</li>
+                    <li>Firma digital</li>
+                    <li>Catálogo de servicios</li>
+                    <li>Control de pagos</li>
+                    <li>Dashboard financiero</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/configuracion.js') }}"></script>
+{% endblock %}

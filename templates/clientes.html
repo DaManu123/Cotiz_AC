@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Clientes - Cotiz AC{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-people"></i> Gestión de Clientes
+        </h1>
+    </div>
+</div>
+
+<!-- Búsqueda y Nuevo Cliente -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-10">
+                <input type="text" class="form-control" id="buscar-cliente" placeholder="Buscar por nombre...">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#modalCliente" onclick="limpiarFormulario()">
+                    <i class="bi bi-plus-circle"></i> Nuevo Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Clientes -->
+<div class="card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Clientes Registrados</h5>
+        <span class="badge bg-primary" id="total-clientes">0 clientes</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="tabla-clientes">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Dirección</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            Cargando clientes...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cliente (Crear/Editar) -->
+<div class="modal fade" id="modalCliente" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-titulo">
+                    <i class="bi bi-person-plus"></i> Nuevo Cliente
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-cliente">
+                    <input type="hidden" id="cliente-id-edit">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="cliente-nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="cliente-telefono">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="cliente-email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dirección</label>
+                        <textarea class="form-control" id="cliente-direccion" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarCliente()">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/clientes.js') }}"></script>
+{% endblock %}

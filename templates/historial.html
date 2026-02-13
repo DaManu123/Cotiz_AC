@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Cotizaciones - Cotiz AC{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-clock-history"></i> Historial de Cotizaciones
+        </h1>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Cliente</label>
+                <select class="form-select" id="filtro-cliente">
+                    <option value="">Todos los clientes</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Estatus</label>
+                <select class="form-select" id="filtro-estatus">
+                    <option value="">Todos los estatus</option>
+                    <option value="Borrador">Borrador</option>
+                    <option value="Enviada">Enviada</option>
+                    <option value="Aceptada">Aceptada</option>
+                    <option value="Cancelada">Cancelada</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label">Fecha Desde</label>
+                <input type="date" class="form-control" id="filtro-fecha-desde">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label">Fecha Hasta</label>
+                <input type="date" class="form-control" id="filtro-fecha-hasta">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label">&nbsp;</label>
+                <button class="btn btn-primary w-100" onclick="aplicarFiltros()">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Cotizaciones -->
+<div class="card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Cotizaciones</h5>
+        <span class="badge bg-primary" id="total-resultados">0 resultados</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="tabla-historial">
+                <thead>
+                    <tr>
+                        <th>No. Cotización</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Subtotal</th>
+                        <th>IVA</th>
+                        <th>Total</th>
+                        <th>Estatus</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            Cargando cotizaciones...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ver Detalle -->
+<div class="modal fade" id="modalDetalle" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-eye"></i> Detalle de Cotización</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalle-content">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/historial.js') }}"></script>
+{% endblock %}

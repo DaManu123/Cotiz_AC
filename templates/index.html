@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Cotiz AC{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Tarjetas de Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Cotizaciones</h6>
+                        <h2 class="mb-0" id="total-cotizaciones">0</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-file-earmark-text" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Aceptadas</h6>
+                        <h2 class="mb-0" id="cotizaciones-aceptadas">0</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-check-circle" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Enviadas</h6>
+                        <h2 class="mb-0" id="cotizaciones-enviadas">0</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-send" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Clientes</h6>
+                        <h2 class="mb-0" id="total-clientes">0</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-people" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="/nueva-cotizacion" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-plus-circle"></i><br>
+                            Nueva Cotización
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="/historial" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="bi bi-clock-history"></i><br>
+                            Ver Historial
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="/clientes" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="bi bi-person-plus"></i><br>
+                            Agregar Cliente
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="/configuracion" class="btn btn-outline-secondary btn-lg w-100">
+                            <i class="bi bi-gear"></i><br>
+                            Configuración
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cotizaciones Recientes -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Cotizaciones Recientes</h5>
+                <a href="/historial" class="btn btn-sm btn-outline-primary">Ver todas</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="tabla-recientes">
+                        <thead>
+                            <tr>
+                                <th>No. Cotización</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Estatus</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    Cargando cotizaciones...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    cargarEstadisticas();
+    cargarCotizacionesRecientes();
+});
+
+function cargarEstadisticas() {
+    // Cargar total de cotizaciones
+    $.get('/api/cotizaciones', function(data) {
+        $('#total-cotizaciones').text(data.total);
+        
+        // Calcular por estatus
+        const aceptadas = data.cotizaciones.filter(c => c.estatus === 'Aceptada').length;
+        const enviadas = data.cotizaciones.filter(c => c.estatus === 'Enviada').length;
+        
+        $('#cotizaciones-aceptadas').text(aceptadas);
+        $('#cotizaciones-enviadas').text(enviadas);
+    });
+    
+    // Cargar total de clientes
+    $.get('/api/clientes', function(data) {
+        $('#total-clientes').text(data.total);
+    });
+}
+
+function cargarCotizacionesRecientes() {
+    $.get('/api/cotizaciones', function(data) {
+        const tbody = $('#tabla-recientes tbody');
+        tbody.empty();
+        
+        if (data.cotizaciones.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="6" class="text-center text-muted">
+                        No hay cotizaciones registradas
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        // Mostrar las últimas 5
+        data.cotizaciones.slice(0, 5).forEach(function(cot) {
+            const estatusBadge = getEstatusBadge(cot.estatus);
+            tbody.append(`
+                <tr>
+                    <td><strong>${cot.numero_cotizacion}</strong></td>
+                    <td>${formatearFecha(cot.fecha)}</td>
+                    <td>${cot.cliente.nombre}</td>
+                    <td><strong>$${formatearMonto(cot.total)}</strong></td>
+                    <td>${estatusBadge}</td>
+                    <td>
+                        <a href="/api/cotizaciones/${cot.id}/export/pdf" class="btn btn-sm btn-outline-danger" title="Descargar PDF">
+                            <i class="bi bi-file-pdf"></i>
+                        </a>
+                        <a href="/api/cotizaciones/${cot.id}/export/excel" class="btn btn-sm btn-outline-success" title="Descargar Excel">
+                            <i class="bi bi-file-excel"></i>
+                        </a>
+                    </td>
+                </tr>
+            `);
+        });
+    });
+}
+</script>
+{% endblock %}
