@@ -22,11 +22,12 @@ def init_database():
         
         # Crear empresa
         empresa = Empresa()
-        empresa.nombre = "Cotiz AC - Servicios de Climatización"
+        empresa.nombre = "Multiservicios RMG"
         empresa.direccion = "Av. Principal #123, Col. Centro, Ciudad"
         empresa.telefono = "(555) 123-4567"
-        empresa.email = "contacto@cotizac.com"
-        empresa.redes_sociales = "Facebook: @CotizAC | Instagram: @cotizac_oficial"
+        empresa.email = "contacto@multiserviciosrmg.com"
+        empresa.rfc = "MRM2501011A1"
+        empresa.redes_sociales = "Facebook: @MultiserviciosRMG | Instagram: @multiservicios_rmg"
         db.session.add(empresa)
         
         # Crear clientes de ejemplo

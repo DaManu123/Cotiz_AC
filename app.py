@@ -201,7 +201,7 @@ def api_exportar_pdf(cotizacion_id):
         empresa_data = empresa_result.get('empresa', {}) if empresa_status == 200 else {}
         
         # Generar PDF
-        filepath = pdf_service.generar_cotizacion(cotizacion_data, empresa_data)
+        filepath = pdf_service.generar_cotizacion(cotizacion_data, empresa_data)  # type: ignore
         
         # Enviar archivo
         numero_cot = cotizacion_data['numero_cotizacion'] if isinstance(cotizacion_data, dict) else 'cotizacion'

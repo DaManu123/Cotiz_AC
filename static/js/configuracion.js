@@ -17,6 +17,7 @@ function cargarDatosEmpresa() {
             $('#empresa-direccion').val(empresa.direccion || '');
             $('#empresa-telefono').val(empresa.telefono || '');
             $('#empresa-email').val(empresa.email || '');
+            $('#empresa-rfc').val(empresa.rfc || '');
             $('#empresa-redes').val(empresa.redes_sociales || '');
         }
     }).fail(function(error) {
@@ -42,6 +43,7 @@ function guardarEmpresa() {
         direccion: $('#empresa-direccion').val(),
         telefono: $('#empresa-telefono').val(),
         email: $('#empresa-email').val(),
+        rfc: $('#empresa-rfc').val(),
         redes_sociales: $('#empresa-redes').val()
     };
     

@@ -18,6 +18,7 @@ class Empresa(db.Model):
     direccion = db.Column(db.String(300))
     telefono = db.Column(db.String(50))
     email = db.Column(db.String(100))
+    rfc = db.Column(db.String(20))  # RFC de la empresa
     redes_sociales = db.Column(db.Text)  # JSON string
     logo = db.Column(db.String(200))  # Ruta al logo
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -30,6 +31,7 @@ class Empresa(db.Model):
             'direccion': self.direccion,
             'telefono': self.telefono,
             'email': self.email,
+            'rfc': self.rfc,
             'redes_sociales': self.redes_sociales,
             'logo': self.logo
         }

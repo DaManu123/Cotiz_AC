@@ -26,6 +26,7 @@ class EmpresaController:
                 empresa.direccion = data.get('direccion', '')
                 empresa.telefono = data.get('telefono', '')
                 empresa.email = data.get('email', '')
+                empresa.rfc = data.get('rfc', '')
                 empresa.redes_sociales = data.get('redes_sociales', '')
                 empresa.logo = data.get('logo', '')
                 db.session.add(empresa)
@@ -39,6 +40,8 @@ class EmpresaController:
                     empresa.telefono = data['telefono']
                 if 'email' in data:
                     empresa.email = data['email']
+                if 'rfc' in data:
+                    empresa.rfc = data['rfc']
                 if 'redes_sociales' in data:
                     empresa.redes_sociales = data['redes_sociales']
                 if 'logo' in data:
