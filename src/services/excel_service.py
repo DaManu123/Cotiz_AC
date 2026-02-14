@@ -26,8 +26,8 @@ class ExcelService:
     BLANCO = 'FFFFFF'
     NEGRO = '000000'
 
-    # ── Anchos de columna ──
-    COL_WIDTHS = {'A': 14, 'B': 9, 'C': 42, 'D': 16, 'E': 18}
+    # ── Anchos de columna (ajustados para llenar tamaño carta) ──
+    COL_WIDTHS = {'A': 14, 'B': 10, 'C': 44, 'D': 17, 'E': 18}
 
     # ── Ruta del logo ──
     LOGO_PATH = os.path.join('static', 'img', 'logormg.jpg')
@@ -97,13 +97,22 @@ class ExcelService:
         ws.title = "Pro-Forma"
         for col_letter, width in self.COL_WIDTHS.items():
             ws.column_dimensions[col_letter].width = width
+        # Tamaño carta, vertical
         ws.page_setup.paperSize = ws.PAPERSIZE_LETTER  # type: ignore
         ws.page_setup.orientation = 'portrait'
+        # Ajustar al ancho de 1 página; alto libre (0 = sin restricción)
         ws.sheet_properties.pageSetUpPr.fitToPage = True  # type: ignore
-        ws.page_margins.left = 0.4
-        ws.page_margins.right = 0.4
+        ws.page_setup.fitToWidth = 1   # type: ignore
+        ws.page_setup.fitToHeight = 1  # type: ignore  ← forzar todo en 1 página
+        # Centrar horizontalmente en la hoja al imprimir
+        ws.print_options.horizontalCentered = True  # type: ignore
+        # Márgenes (pulgadas)
+        ws.page_margins.left = 0.35
+        ws.page_margins.right = 0.35
         ws.page_margins.top = 0.3
         ws.page_margins.bottom = 0.3
+        ws.page_margins.header = 0.1  # type: ignore
+        ws.page_margins.footer = 0.1  # type: ignore
         ws.sheet_view.showGridLines = False  # type: ignore
 
     # ══════════════════════════════════════════════════════════
@@ -124,46 +133,62 @@ class ExcelService:
         """
         s = estilos
 
-        # ── Logo ──
+        # ── Filas del encabezado: fila 1 es espaciador, filas 2-4 contienen el logo ──
+        ws.row_dimensions[1].height = 10   # espaciador superior
+        for r in range(2, 5):
+            ws.row_dimensions[r].height = 25  # 3 × 25 = 75px para el logo
+
+        # ── Logo (anclado en A2 para que el espaciador lo centre verticalmente) ──
         if os.path.exists(self.LOGO_PATH):
             img = XlImage(self.LOGO_PATH)
-            img.width = 180
-            img.height = 80
-            ws.add_image(img, 'A1')
+            img.width = 170
+            img.height = 72
+            ws.add_image(img, 'A2')
 
-        # ── PRO-FORMA text ──
-        ws.merge_cells('D1:E3')
+        # ── PRO-FORMA text (filas 1-4 centrado vertical con el logo) ──
+        ws.merge_cells('D1:E4')
         cell_pf = ws['D1']
         cell_pf.value = "PRO-FORMA"  # type: ignore
         cell_pf.font = s['font_proforma']
         cell_pf.alignment = Alignment(horizontal='right', vertical='center')
 
-        # Adjust row heights for header area
-        for r in range(1, 5):
-            ws.row_dimensions[r].height = 18
+        # ── Company info lines (rows 5-9, cols A:C) con iconos PNG ──
+        ICONS_DIR = os.path.join('static', 'img', 'icons')
+        icon_map = {
+            'direccion': os.path.join(ICONS_DIR, 'icons8-location-pin-48.png'),
+            'telefono': os.path.join(ICONS_DIR, 'icons8-phone-48.png'),
+            'email': os.path.join(ICONS_DIR, 'icons8-email-48.png'),
+            'redes_sociales': os.path.join(ICONS_DIR, 'icons8-web-48.png'),
+            'rfc': os.path.join(ICONS_DIR, 'icons8-id-card-48.png'),
+        }
 
-        # ── Company info lines (rows 5-9, cols A:C) ──
-        info_lines: List[str] = []
-        if empresa_data.get('direccion'):
-            info_lines.append(f"📍  {empresa_data['direccion']}")
-        if empresa_data.get('telefono'):
-            info_lines.append(f"📞  {empresa_data['telefono']}")
-        if empresa_data.get('email'):
-            info_lines.append(f"✉️  {empresa_data['email']}")
-        if empresa_data.get('redes_sociales'):
-            info_lines.append(f"🌐  {empresa_data['redes_sociales']}")
-        if empresa_data.get('rfc'):
-            info_lines.append(f"🆔  {empresa_data['rfc']}")
+        campos = [
+            ('direccion', empresa_data.get('direccion', '')),
+            ('telefono', empresa_data.get('telefono', '')),
+            ('email', empresa_data.get('email', '')),
+            ('redes_sociales', empresa_data.get('redes_sociales', '')),
+            ('rfc', empresa_data.get('rfc', '')),
+        ]
 
         row = 5
-        for info in info_lines:
-            ws.merge_cells(f'A{row}:C{row}')
-            c = ws.cell(row=row, column=1)
-            c.value = info  # type: ignore
-            c.font = s['font_empresa_dato']
-            c.alignment = s['align_left']
-            ws.row_dimensions[row].height = 15
-            row += 1
+        for campo, valor in campos:
+            if valor:
+                # Icono PNG flotante en la celda A{row}
+                icon_path = icon_map.get(campo, '')
+                if os.path.exists(icon_path):
+                    icon_img = XlImage(icon_path)
+                    icon_img.width = 13
+                    icon_img.height = 13
+                    ws.add_image(icon_img, f'A{row}')
+
+                # Texto con indent para dejar espacio al icono
+                ws.merge_cells(f'A{row}:C{row}')
+                c = ws.cell(row=row, column=1)
+                c.value = f"   {valor}"  # type: ignore  (espacios para dejar lugar al icono)
+                c.font = s['font_empresa_dato']
+                c.alignment = Alignment(horizontal='left', vertical='center', wrap_text=True, indent=2)
+                ws.row_dimensions[row].height = 15
+                row += 1
 
         # ── Fecha / N° de Pro-forma boxes (D5:E6) ──
         fecha_str = cotizacion_data.get('fecha', '')
@@ -316,11 +341,11 @@ class ExcelService:
 
             row += 1
 
-        # Minimum 25 rows of table (fill empty rows with $0.00 formulas)
+        # Rellenar hasta mínimo 18 filas de tabla (se comprimirá con fitToPage si excede)
         data_count = sum(1 for d in detalles if d.get('cantidad'))
         group_count = len(set(d.get('grupo', '') for d in detalles if d.get('grupo', '')))
         total_rows = data_count + group_count
-        min_rows = 25
+        min_rows = 18
         filas_extra = max(0, min_rows - total_rows)
         for _ in range(filas_extra):
             self._fila_vacia(ws, row, s)
@@ -528,7 +553,10 @@ class ExcelService:
         row = self._escribir_totales(ws, row, data_start, data_end, cotizacion_data, estilos)
 
         # 6. Términos y pie
-        self._escribir_terminos_y_pie(ws, row, cotizacion_data, empresa_data, estilos)
+        last_row = self._escribir_terminos_y_pie(ws, row, cotizacion_data, empresa_data, estilos)
+
+        # 7. Área de impresión para que solo se imprima el contenido real
+        ws.print_area = f'A1:E{last_row}'  # type: ignore
 
         wb.save(filepath)
         return filepath

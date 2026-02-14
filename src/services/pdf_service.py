@@ -132,12 +132,11 @@ class PDFService:
     def _bloque_encabezado(self, empresa_data: dict, cotizacion_data: dict, estilos: dict) -> list:
         elements: list = []
         s = estilos
-        page_width = letter[0] - 0.8 * inch  # usable width with margins
-
+        page_width = letter[0] - 0.7 * inch  # ancho útil con márgenes 0.35+0.35
         # ── Row 1: Logo left + PRO-FORMA right ──
         logo_cell: object
         if os.path.exists(self.LOGO_PATH):
-            logo_cell = Image(self.LOGO_PATH, width=2.2 * inch, height=1.0 * inch)
+            logo_cell = Image(self.LOGO_PATH, width=2.3 * inch, height=1.05 * inch)
         else:
             logo_cell = Paragraph(empresa_data.get('nombre', ''), s['proforma_title'])
 
@@ -145,31 +144,63 @@ class PDFService:
             logo_cell,
             Paragraph('PRO-FORMA', s['proforma_title']),
         ]]
-        header_table = Table(header_data, colWidths=[page_width * 0.45, page_width * 0.55])
+        header_table = Table(
+            header_data,
+            colWidths=[page_width * 0.45, page_width * 0.55],
+            rowHeights=[1.2 * inch],  # altura fija para centrar ambos verticalmente
+        )
         header_table.setStyle(TableStyle([
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('TOPPADDING', (0, 0), (-1, -1), 0),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),      # logo a la izquierda
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),      # PRO-FORMA a la derecha
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (0, 0), 4),      # margen izquierdo del logo
         ]))
         elements.append(header_table)
         elements.append(Spacer(1, 0.15 * inch))
 
         # ── Row 2: Company info left + Fecha/N° right ──
-        # Company info lines
-        info_lines = []
-        if empresa_data.get('direccion'):
-            info_lines.append(f"📍  {empresa_data['direccion']}")
-        if empresa_data.get('telefono'):
-            info_lines.append(f"📞  {empresa_data['telefono']}")
-        if empresa_data.get('email'):
-            info_lines.append(f"✉️  {empresa_data['email']}")
-        if empresa_data.get('redes_sociales'):
-            info_lines.append(f"🌐  {empresa_data['redes_sociales']}")
-        if empresa_data.get('rfc'):
-            info_lines.append(f"🆔  {empresa_data['rfc']}")
+        # Iconos PNG para cada dato de empresa
+        ICONS_DIR = os.path.join('static', 'img', 'icons')
+        icon_map = {
+            'direccion': os.path.join(ICONS_DIR, 'icons8-location-pin-48.png'),
+            'telefono': os.path.join(ICONS_DIR, 'icons8-phone-48.png'),
+            'email': os.path.join(ICONS_DIR, 'icons8-email-48.png'),
+            'redes_sociales': os.path.join(ICONS_DIR, 'icons8-web-48.png'),
+            'rfc': os.path.join(ICONS_DIR, 'icons8-id-card-48.png'),
+        }
+        icon_size = 11  # puntos (tamaño del icono en el PDF)
 
-        info_text = '<br/>'.join(info_lines) if info_lines else ''
-        info_para = Paragraph(info_text, s['empresa_dato'])
+        info_rows: list = []
+        campos = [
+            ('direccion', empresa_data.get('direccion', '')),
+            ('telefono', empresa_data.get('telefono', '')),
+            ('email', empresa_data.get('email', '')),
+            ('redes_sociales', empresa_data.get('redes_sociales', '')),
+            ('rfc', empresa_data.get('rfc', '')),
+        ]
+        for campo, valor in campos:
+            if valor:
+                icon_path = icon_map.get(campo, '')
+                if os.path.exists(icon_path):
+                    icon_img = Image(icon_path, width=icon_size, height=icon_size)
+                else:
+                    icon_img = Paragraph('', s['empresa_dato'])
+                info_rows.append([icon_img, Paragraph(valor, s['empresa_dato'])])
+
+        if info_rows:
+            info_mini_table = Table(info_rows, colWidths=[16, page_width * 0.55 - 20])
+            info_mini_table.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('TOPPADDING', (0, 0), (-1, -1), 1),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+                ('LEFTPADDING', (0, 0), (0, -1), 0),
+                ('RIGHTPADDING', (0, 0), (0, -1), 2),
+                ('LEFTPADDING', (1, 0), (1, -1), 2),
+            ]))
+        else:
+            info_mini_table = Paragraph('', s['empresa_dato'])
 
         # Fecha / N° as small table
         fecha_str = cotizacion_data.get('fecha', '')
@@ -195,7 +226,7 @@ class PDFService:
             ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ]))
 
-        info_row_data = [[info_para, fecha_table]]
+        info_row_data = [[info_mini_table, fecha_table]]
         info_table = Table(info_row_data, colWidths=[page_width * 0.55, page_width * 0.45])
         info_table.setStyle(TableStyle([
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -212,7 +243,7 @@ class PDFService:
     def _tabla_conceptos(self, cotizacion_data: dict, estilos: dict) -> list:
         elements: list = []
         s = estilos
-        page_width = letter[0] - 0.8 * inch
+        page_width = letter[0] - 0.7 * inch  # ancho útil con márgenes 0.35+0.35
 
         # Column widths: IVA | CANT | DESC | P.U. | TOTAL
         col_widths = [
@@ -262,7 +293,7 @@ class PDFService:
 
         # Empty rows to fill min 15 rows
         data_row_count = len(table_data) - 1  # minus header
-        filas_extra = max(0, 15 - data_row_count)
+        filas_extra = max(0, 10 - data_row_count)
         for _ in range(filas_extra):
             table_data.append([
                 Paragraph('0.00', s['cell_right']),
@@ -322,7 +353,7 @@ class PDFService:
     def _bloque_totales(self, cotizacion_data: dict, estilos: dict) -> list:
         elements: list = []
         s = estilos
-        page_width = letter[0] - 0.8 * inch
+        page_width = letter[0] - 0.7 * inch  # ancho útil con márgenes 0.35+0.35
 
         subtotal = cotizacion_data.get('subtotal', 0) or 0
         descuento = cotizacion_data.get('descuento', 0) or 0
@@ -414,8 +445,8 @@ class PDFService:
         doc = SimpleDocTemplate(
             filepath,
             pagesize=letter,
-            rightMargin=0.4 * inch,
-            leftMargin=0.4 * inch,
+            rightMargin=0.35 * inch,
+            leftMargin=0.35 * inch,
             topMargin=0.3 * inch,
             bottomMargin=0.3 * inch,
         )
