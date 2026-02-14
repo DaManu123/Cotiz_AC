@@ -62,34 +62,36 @@ def init_database():
         cotizacion.fecha = date.today()
         cotizacion.cliente_id = 1
         cotizacion.estatus = "Enviada"
-        cotizacion.notas = "Incluye instalación y garantía de 1 año. Tiempo de entrega: 3-5 días hábiles."
+        cotizacion.descuento = 0
+        cotizacion.envio_delivery = 0
+        cotizacion.notas = "1.- Cotización válida por 30 días\n2.- Precio con IVA\n3.- Entregando el producto o ejecutado el servicio no existen devoluciones."
         
-        # Agregar detalles
-        detalle1 = DetalleCotizacion()
-        detalle1.cantidad = 2
-        detalle1.descripcion = "Aire Acondicionado Split 12,000 BTU Inverter - Marca Premium"
-        detalle1.precio_unitario = 8500.00
-        detalle1.total_linea = 17000.00
-        detalle1.orden = 0
+        # Agregar detalles con grupos/ciudades
+        detalles_data = [
+            # Hermosillo
+            ("Hermosillo", 11, "Bases de Herrería", 646.55),
+            ("Hermosillo", 3, "Modificaciones", 258.62),
+            ("Hermosillo", 52, "Cableado 3x12 (M)", 59.48),
+            ("Hermosillo", 45, "Cableado 3x12 (M)", 59.48),
+            ("Hermosillo", 2, "Térmico 2x30", 344.83),
+            # Navojoa
+            ("Navojoa", 78, "Cableado 3x12 (M)", 59.48),
+            ("Navojoa", 72, "Tubería flexible metálica 1/2 (M)", 30.17),
+            ("Navojoa", 1, "Térmico 2x30", 344.83),
+            # Cajeme
+            ("Cajeme", 55, "Cableado 3x12 (M)", 59.48),
+            ("Cajeme", 1, "Bases de Herrería", 646.55),
+        ]
         
-        detalle2 = DetalleCotizacion()
-        detalle2.cantidad = 2
-        detalle2.descripcion = "Instalación completa de equipo incluye: tubería, cableado, soportes y mano de obra"
-        detalle2.precio_unitario = 2500.00
-        detalle2.total_linea = 5000.00
-        detalle2.orden = 1
-        
-        detalle3 = DetalleCotizacion()
-        detalle3.cantidad = 1
-        detalle3.descripcion = "Mantenimiento preventivo (cortesía por compra)"
-        detalle3.precio_unitario = 0.00
-        detalle3.total_linea = 0.00
-        detalle3.orden = 2
-        
-        detalles = [detalle1, detalle2, detalle3]
-        
-        for detalle in detalles:
-            cotizacion.detalles.append(detalle)
+        for idx, (grupo, cant, desc, pu) in enumerate(detalles_data):
+            det = DetalleCotizacion()
+            det.grupo = grupo
+            det.cantidad = cant
+            det.descripcion = desc
+            det.precio_unitario = pu
+            det.total_linea = cant * pu
+            det.orden = idx
+            cotizacion.detalles.append(det)
         
         cotizacion.calcular_totales()
         db.session.add(cotizacion)

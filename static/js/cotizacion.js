@@ -20,6 +20,11 @@ $(document).ready(function() {
         e.preventDefault();
         guardarCotizacion();
     });
+
+    // Eventos para descuento y envío
+    $('#descuento, #envio-delivery').on('input', function() {
+        calcularTotales();
+    });
 });
 
 function cargarConsecutivo() {
@@ -33,16 +38,27 @@ function agregarLinea() {
     const nuevaLinea = `
         <tr data-linea="${lineaContador}">
             <td>
-                <input type="number" class="form-control cantidad" step="0.01" min="0" value="1" required>
+                <input type="text" class="form-control form-control-sm grupo" 
+                       placeholder="Ej: Hermosillo">
             </td>
             <td>
-                <textarea class="form-control descripcion" rows="2" required></textarea>
+                <input type="number" class="form-control form-control-sm cantidad" 
+                       step="1" min="0" value="1" required>
             </td>
             <td>
-                <input type="number" class="form-control precio-unitario" step="0.01" min="0" value="0" required>
+                <textarea class="form-control form-control-sm descripcion" rows="1" required></textarea>
             </td>
             <td>
-                <input type="text" class="form-control total-linea currency-input" readonly value="$0.00">
+                <input type="number" class="form-control form-control-sm precio-unitario" 
+                       step="0.01" min="0" value="0" required>
+            </td>
+            <td>
+                <input type="text" class="form-control form-control-sm total-linea currency-input" 
+                       readonly value="$0.00">
+            </td>
+            <td>
+                <input type="text" class="form-control form-control-sm iva-linea currency-input" 
+                       readonly value="$0.00">
             </td>
             <td class="text-center">
                 <button type="button" class="btn btn-sm btn-danger" onclick="eliminarLinea(${lineaContador})">
@@ -75,8 +91,10 @@ function calcularLineaTotal($linea) {
     const cantidad = parseFloat($linea.find('.cantidad').val()) || 0;
     const precioUnitario = parseFloat($linea.find('.precio-unitario').val()) || 0;
     const total = cantidad * precioUnitario;
+    const iva = total * 1.16; // Total con IVA
     
     $linea.find('.total-linea').val(formatearMoneda(total));
+    $linea.find('.iva-linea').val(formatearMoneda(iva));
 }
 
 function calcularTotales() {
@@ -88,10 +106,14 @@ function calcularTotales() {
         subtotal += cantidad * precioUnitario;
     });
     
-    const impuestos = subtotal * 0.16; // IVA 16%
-    const total = subtotal + impuestos;
+    const descuento = parseFloat($('#descuento').val()) || 0;
+    const envioDelivery = parseFloat($('#envio-delivery').val()) || 0;
+    const neto = subtotal - descuento;
+    const impuestos = neto * 0.16; // IVA 16%
+    const total = neto + impuestos + envioDelivery;
     
     $('#subtotal').text(formatearMoneda(subtotal));
+    $('#neto').text(formatearMoneda(neto));
     $('#impuestos').text(formatearMoneda(impuestos));
     $('#total').text(formatearMoneda(total));
 }
@@ -116,6 +138,7 @@ function guardarCotizacion() {
     let detallesValidos = true;
     
     $('#conceptos-body tr').each(function() {
+        const grupo = $(this).find('.grupo').val().trim();
         const cantidad = parseFloat($(this).find('.cantidad').val());
         const descripcion = $(this).find('.descripcion').val().trim();
         const precioUnitario = parseFloat($(this).find('.precio-unitario').val());
@@ -126,6 +149,7 @@ function guardarCotizacion() {
         }
         
         detalles.push({
+            grupo: grupo,
             cantidad: cantidad,
             descripcion: descripcion,
             precio_unitario: precioUnitario
@@ -143,6 +167,8 @@ function guardarCotizacion() {
         fecha: $('#fecha').val(),
         estatus: $('#estatus').val(),
         notas: $('#notas').val(),
+        descuento: parseFloat($('#descuento').val()) || 0,
+        envio_delivery: parseFloat($('#envio-delivery').val()) || 0,
         detalles: detalles
     };
     

@@ -83,11 +83,13 @@
                 <table class="table table-bordered" id="tabla-conceptos">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 10%;">Cantidad</th>
-                            <th style="width: 50%;">Descripción</th>
-                            <th style="width: 15%;">Precio Unit.</th>
-                            <th style="width: 15%;">Total</th>
-                            <th style="width: 10%;">Acción</th>
+                            <th style="width: 12%;">Grupo/Ciudad</th>
+                            <th style="width: 8%;">Cantidad</th>
+                            <th style="width: 38%;">Descripción</th>
+                            <th style="width: 13%;">Precio Unit.</th>
+                            <th style="width: 13%;">Total</th>
+                            <th style="width: 8%;">IVA</th>
+                            <th style="width: 8%;">Acción</th>
                         </tr>
                     </thead>
                     <tbody id="conceptos-body">
@@ -103,22 +105,40 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-8">
-                    <label class="form-label">Notas / Condiciones</label>
-                    <textarea class="form-control" id="notas" rows="3" placeholder="Incluye garantía, tiempo de entrega, etc."></textarea>
+                    <label class="form-label">Notas / Términos y Condiciones</label>
+                    <textarea class="form-control" id="notas" rows="4" placeholder="Ej: 1.- Cotización válida por 30 días&#10;2.- Precio con IVA&#10;3.- Entregando el producto o ejecutado el servicio no existen devoluciones."></textarea>
                 </div>
                 <div class="col-md-4">
-                    <table class="table table-borderless">
+                    <table class="table table-borderless table-sm">
                         <tr>
-                            <td class="text-end"><strong>Subtotal:</strong></td>
+                            <td class="text-end"><strong>Total parcial:</strong></td>
                             <td class="text-end" id="subtotal">$0.00</td>
                         </tr>
                         <tr>
-                            <td class="text-end"><strong>IVA (16%):</strong></td>
+                            <td class="text-end"><strong>Descuento ($):</strong></td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-end" 
+                                       id="descuento" step="0.01" min="0" value="0" style="max-width:120px;margin-left:auto;">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-end"><strong>NETO:</strong></td>
+                            <td class="text-end" id="neto">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td class="text-end"><strong>Impuesto (IVA):</strong></td>
                             <td class="text-end" id="impuestos">$0.00</td>
                         </tr>
-                        <tr class="table-success">
-                            <td class="text-end"><strong>TOTAL:</strong></td>
-                            <td class="text-end"><h4 id="total">$0.00</h4></td>
+                        <tr>
+                            <td class="text-end"><strong>Envío Delivery:</strong></td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-end" 
+                                       id="envio-delivery" step="0.01" min="0" value="0" style="max-width:120px;margin-left:auto;">
+                            </td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td class="text-end"><strong>Pagado:</strong></td>
+                            <td class="text-end"><h4 id="total" class="text-primary mb-0">$0.00</h4></td>
                         </tr>
                     </table>
                 </div>

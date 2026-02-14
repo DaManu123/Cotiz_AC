@@ -53,12 +53,15 @@ class CotizacionController:
             cotizacion.fecha = datetime.strptime(data.get('fecha', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d')
             cotizacion.cliente_id = data['cliente_id']
             cotizacion.notas = data.get('notas', '')
+            cotizacion.descuento = data.get('descuento', 0) or 0
+            cotizacion.envio_delivery = data.get('envio_delivery', 0) or 0
             cotizacion.estatus = 'Borrador'
             
             # Agregar detalles
             if data.get('detalles'):
                 for idx, detalle_data in enumerate(data['detalles']):
                     detalle = DetalleCotizacion()
+                    detalle.grupo = detalle_data.get('grupo', '')
                     detalle.cantidad = detalle_data['cantidad']
                     detalle.descripcion = detalle_data['descripcion']
                     detalle.precio_unitario = detalle_data['precio_unitario']
@@ -128,6 +131,10 @@ class CotizacionController:
                 cotizacion.fecha = datetime.strptime(data['fecha'], '%Y-%m-%d')
             if 'notas' in data:
                 cotizacion.notas = data['notas']
+            if 'descuento' in data:
+                cotizacion.descuento = data['descuento'] or 0
+            if 'envio_delivery' in data:
+                cotizacion.envio_delivery = data['envio_delivery'] or 0
             if 'estatus' in data:
                 cotizacion.estatus = data['estatus']
             
@@ -140,6 +147,7 @@ class CotizacionController:
                 for idx, detalle_data in enumerate(data['detalles']):
                     detalle = DetalleCotizacion()
                     detalle.cotizacion_id = cotizacion_id
+                    detalle.grupo = detalle_data.get('grupo', '')
                     detalle.cantidad = detalle_data['cantidad']
                     detalle.descripcion = detalle_data['descripcion']
                     detalle.precio_unitario = detalle_data['precio_unitario']

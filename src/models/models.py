@@ -71,6 +71,8 @@ class Cotizacion(db.Model):
     fecha = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
     subtotal = db.Column(db.Float, default=0.0)
+    descuento = db.Column(db.Float, default=0.0)
+    envio_delivery = db.Column(db.Float, default=0.0)
     impuestos = db.Column(db.Float, default=0.0)
     total = db.Column(db.Float, default=0.0)
     estatus = db.Column(db.String(50), default='Borrador')  # Borrador, Enviada, Aceptada, Cancelada
@@ -95,6 +97,8 @@ class Cotizacion(db.Model):
             'cliente_id': self.cliente_id,
             'cliente': self.cliente.to_dict() if self.cliente else None,
             'subtotal': self.subtotal,
+            'descuento': self.descuento,
+            'envio_delivery': self.envio_delivery,
             'impuestos': self.impuestos,
             'total': self.total,
             'estatus': self.estatus,
@@ -103,14 +107,19 @@ class Cotizacion(db.Model):
         }
     
     def calcular_totales(self):
-        """Calcula subtotal, impuestos y total"""
+        """Calcula subtotal, descuento, neto, impuestos y total (pagado)"""
         if self.detalles:
             self.subtotal = sum(detalle.total_linea for detalle in self.detalles)
         else:
             self.subtotal = 0.0
-        # Impuestos configurables (por ahora 16%)
-        self.impuestos = self.subtotal * 0.16
-        self.total = self.subtotal + self.impuestos
+        # NETO = subtotal - descuento
+        descuento = self.descuento or 0.0
+        envio = self.envio_delivery or 0.0
+        neto = self.subtotal - descuento
+        # IVA 16% sobre NETO
+        self.impuestos = neto * 0.16
+        # Total (Pagado) = NETO + IVA + Envío
+        self.total = neto + self.impuestos + envio
         
 
 class DetalleCotizacion(db.Model):
@@ -119,6 +128,7 @@ class DetalleCotizacion(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     cotizacion_id = db.Column(db.Integer, db.ForeignKey('cotizacion.id'), nullable=False)
+    grupo = db.Column(db.String(100))  # Ciudad / sección (ej: "Hermosillo", "Navojoa")
     cantidad = db.Column(db.Float, nullable=False)
     descripcion = db.Column(db.String(500), nullable=False)
     precio_unitario = db.Column(db.Float, nullable=False)
@@ -132,6 +142,7 @@ class DetalleCotizacion(db.Model):
         return {
             'id': self.id,
             'cotizacion_id': self.cotizacion_id,
+            'grupo': self.grupo,
             'cantidad': self.cantidad,
             'descripcion': self.descripcion,
             'precio_unitario': self.precio_unitario,
